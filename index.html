@@ -3,105 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <title>Finance App</title>
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
-<h2>Finance App</h2>
+  <h1>Finance Dashboard</h1>
 
-<div id="auth">
-  <input type="text" id="token" placeholder="GitHub Token" />
-  <input type="text" id="username" placeholder="GitHub Username" />
-  <button onclick="saveCredentials()">Guardar</button>
-</div>
+  <section id="auth">
+    <h3>Autenticação</h3>
+    <input type="text" id="token" placeholder="GitHub Token" />
+    <input type="text" id="username" placeholder="GitHub Username" />
+    <button id="saveAuth">Guardar</button>
+  </section>
 
-<hr/>
+  <section id="add">
+    <h3>Adicionar Gasto</h3>
+    <input type="date" id="date" />
+    <input type="number" id="amount" placeholder="Valor" />
+    <input type="text" id="category" placeholder="Categoria" />
+    <input type="text" id="description" placeholder="Descrição" />
+    <button id="addBtn">Adicionar</button>
+  </section>
 
-<h3>Adicionar Gasto</h3>
-<input type="date" id="date" />
-<input type="number" id="amount" placeholder="Valor" />
-<input type="text" id="category" placeholder="Categoria" />
-<input type="text" id="description" placeholder="Descrição" />
-<button onclick="addTransaction()">Adicionar</button>
+  <section>
+    <h3>Transações</h3>
+    <ul id="transactions"></ul>
+  </section>
 
-<h3>Transações</h3>
-<ul id="transactions"></ul>
-
-<script>
-let token = localStorage.getItem("gh_token");
-let username = localStorage.getItem("gh_username");
-const repo = "finance-data";
-const filePath = "data.json";
-
-function saveCredentials() {
-  token = document.getElementById("token").value;
-  username = document.getElementById("username").value;
-  localStorage.setItem("gh_token", token);
-  localStorage.setItem("gh_username", username);
-  alert("Credenciais guardadas!");
-}
-
-async function getData() {
-  const res = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${filePath}`, {
-    headers: {
-      Authorization: `token ${token}`,
-      Accept: "application/vnd.github.v3+json"
-    }
-  });
-  const data = await res.json();
-  const content = JSON.parse(atob(data.content));
-  return { content, sha: data.sha };
-}
-
-async function updateData(newData, sha) {
-  await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${filePath}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `token ${token}`,
-      Accept: "application/vnd.github.v3+json"
-    },
-    body: JSON.stringify({
-      message: "Update finance data",
-      content: btoa(JSON.stringify(newData, null, 2)),
-      sha: sha
-    })
-  });
-}
-
-async function loadTransactions() {
-  const { content } = await getData();
-  const list = document.getElementById("transactions");
-  list.innerHTML = "";
-  content.transactions.forEach(t => {
-    const li = document.createElement("li");
-    li.textContent = `${t.date} - ${t.amount}€ - ${t.category} - ${t.description}`;
-    list.appendChild(li);
-  });
-}
-
-async function addTransaction() {
-  const date = document.getElementById("date").value;
-  const amount = parseFloat(document.getElementById("amount").value);
-  const category = document.getElementById("category").value;
-  const description = document.getElementById("description").value;
-
-  const { content, sha } = await getData();
-
-  content.transactions.push({
-    id: Date.now(),
-    date,
-    amount,
-    category,
-    description
-  });
-
-  await updateData(content, sha);
-  await loadTransactions();
-}
-
-if (token && username) {
-  loadTransactions();
-}
-</script>
+  <script src="js/api.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
 
 </body>
 </html>
