@@ -35,9 +35,14 @@ async function loadTransactions() {
 
     const div = document.createElement("div");
     div.className = "transaction-card";
+
     div.innerHTML = `
-      <strong>${t.amount}€</strong> - ${t.category}<br/>
-      <small>${t.date} | ${t.description}</small>
+    <strong>${t.amount}€</strong> - ${t.category}<br/>
+    <small>${t.date} | ${t.description}</small>
+    <div class="actions">
+        <button onclick="editTransaction(${t.id})">✏️</button>
+        <button onclick="deleteTransaction(${t.id})">🗑️</button>
+    </div>
     `;
     container.appendChild(div);
   });
@@ -87,3 +92,28 @@ async function saveBudget() {
 }
 
 window.onload = loadTransactions;
+
+async function deleteTransaction(id) {
+  const { content, sha } = await getData();
+
+  content.transactions = content.transactions.filter(t => t.id !== id);
+
+  await updateData(content, sha);
+  await loadTransactions();
+}
+
+async function editTransaction(id) {
+  const { content, sha } = await getData();
+  const transaction = content.transactions.find(t => t.id === id);
+
+  const newAmount = prompt("Novo valor:", transaction.amount);
+  const newCategory = prompt("Nova categoria:", transaction.category);
+  const newDescription = prompt("Nova descrição:", transaction.description);
+
+  if (newAmount !== null) transaction.amount = parseFloat(newAmount);
+  if (newCategory !== null) transaction.category = newCategory;
+  if (newDescription !== null) transaction.description = newDescription;
+
+  await updateData(content, sha);
+  await loadTransactions();
+}

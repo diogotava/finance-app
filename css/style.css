@@ -92,3 +92,21 @@ button:hover {
 .hidden {
   display: none;
 }
+
+.actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 5px;
+}
+
+.actions button {
+  flex: 1;
+  padding: 6px;
+  font-size: 14px;
+  background: #e5e7eb;
+  color: #333;
+}
+
+.actions button:hover {
+  background: #d1d5db;
+}
