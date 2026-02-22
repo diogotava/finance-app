@@ -26,11 +26,19 @@
 
   <section class="card" id="dashboard">
     <h3>Resumo do Mês</h3>
-    <p><strong>Total gasto:</strong> <span id="totalSpent">0€</span></p>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+      <p style="margin: 0;"><strong>Recebido:</strong> <span id="totalIncome" style="color: #10b981;">0€</span></p>
+      <p style="margin: 0;"><strong>Gasto:</strong> <span id="totalSpent" style="color: #ef4444;">0€</span></p>
+    </div>
+    <p><strong>Balanço:</strong> <span id="balance">0€</span></p>
+    <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
     <p><strong>Orçamento:</strong> <span id="monthlyBudget">0€</span></p>
     <p><strong>Restante:</strong> <span id="remaining">0€</span></p>
     <div class="progress-bar">
       <div id="progress"></div>
+    </div>
+    <div style="margin-top: 15px; max-height: 250px; display: flex; justify-content: center;">
+      <canvas id="categoryChart"></canvas>
     </div>
   </section>
 
@@ -41,12 +49,29 @@
   </section>
 
   <section class="card">
-    <h3>Adicionar Gasto</h3>
+    <h3>Adicionar Transação</h3>
+    <select id="type"
+      style="width: 100%; margin: 5px 0; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white;">
+      <option value="expense">Gasto</option>
+      <option value="income">Recebimento</option>
+    </select>
     <input type="date" id="date" />
     <input type="number" id="amount" placeholder="Valor" />
-    <input type="text" id="category" placeholder="Categoria" />
+    <select id="category"
+      style="width: 100%; margin: 5px 0; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white;">
+      <!-- Categorias carregadas via JS -->
+    </select>
     <input type="text" id="description" placeholder="Descrição" />
     <button id="addBtn">Adicionar</button>
+  </section>
+
+  <section class="card">
+    <h3>Gerir Categorias</h3>
+    <ul id="categoriesList" style="list-style: none; padding: 0; margin-bottom: 15px;"></ul>
+    <div style="display: flex; gap: 10px; align-items: stretch;">
+      <input type="text" id="newCategory" placeholder="Nova Categoria" style="flex: 1;" />
+      <button id="addCategoryBtn" style="width: auto; padding: 0 15px;">Adicionar</button>
+    </div>
   </section>
 
   <section>
@@ -54,6 +79,7 @@
     <div id="transactions"></div>
   </section>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://diogotava.github.io/finance-app/js/api.js"></script>
   <script src="https://diogotava.github.io/finance-app/js/storage.js"></script>
   <script src="https://diogotava.github.io/finance-app/js/app.js"></script>
