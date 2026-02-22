@@ -1,11 +1,24 @@
 let chartInstance = null;
 
+const defaultCategories = {
+  expense: ["Alimentação", "Transportes", "Lazer", "Outros"],
+  income: ["Salário", "Investimentos", "Vendas", "Outros"]
+};
+
+// Event Listeners - Addition
 document.getElementById("addBtn").addEventListener("click", addTransaction);
 document.getElementById("saveBudget").addEventListener("click", saveBudget);
 document.getElementById("addCategoryBtn").addEventListener("click", addCategory);
 
+// Modais Lógica
 document.getElementById("settingsBtn").addEventListener("click", () => {
   document.getElementById("settingsModal").classList.remove("hidden");
+});
+document.getElementById("closeSettingsBtn").addEventListener("click", () => {
+  document.getElementById("settingsModal").classList.add("hidden");
+});
+document.getElementById("closeEditBtn").addEventListener("click", () => {
+  document.getElementById("editModal").classList.add("hidden");
 });
 
 document.getElementById("saveAuth").addEventListener("click", () => {
@@ -17,19 +30,65 @@ document.getElementById("saveAuth").addEventListener("click", () => {
   loadTransactions();
 });
 
+// Atualizar select de categorias baseado no tipo (Gasto/Recebimento)
+document.getElementById("type").addEventListener("change", async () => {
+  const t = document.getElementById("type").value;
+  const { content } = await getData();
+  const cats = ensureCategoriesStruct(content.settings.categories);
+  renderCategorySelect(document.getElementById("category"), cats[t]);
+});
+
+document.getElementById("manageCategoryType").addEventListener("change", async () => {
+  const t = document.getElementById("manageCategoryType").value;
+  const { content } = await getData();
+  const cats = ensureCategoriesStruct(content.settings.categories);
+  renderCategoryList(cats[t]);
+});
+
+document.getElementById("editType").addEventListener("change", async () => {
+  const t = document.getElementById("editType").value;
+  const { content } = await getData();
+  const cats = ensureCategoriesStruct(content.settings.categories);
+  renderCategorySelect(document.getElementById("editCategory"), cats[t]);
+});
+
+// Guardar edições pelo modal
+document.getElementById("saveEditBtn").addEventListener("click", saveEditedTransaction);
+
+function ensureCategoriesStruct(categories) {
+  // Migração de array antigo para o novo formato { income: [], expense: [] }
+  if (!categories || Array.isArray(categories)) {
+    return defaultCategories;
+  }
+  if (!categories.expense || !categories.income) {
+    return defaultCategories;
+  }
+  return categories;
+}
+
 async function loadTransactions() {
   try {
     const creds = getCredentials();
     if (!creds.token || !creds.username) return;
 
-    const { content } = await getData();
+    const { content, sha } = await getData();
 
-    // Ensure categories array exists
-    if (!content.settings.categories || !Array.isArray(content.settings.categories) || content.settings.categories.length === 0) {
-      content.settings.categories = ["Alimentação", "Transportes", "Lazer", "Outros"];
+    // Validate or Migrate categories format
+    let migated = false;
+    if (!content.settings.categories || Array.isArray(content.settings.categories)) {
+      content.settings.categories = defaultCategories;
+      migrated = true;
     }
 
-    renderCategoriesUI(content.settings.categories);
+    if (migrated) {
+      await updateData(content, sha);
+    }
+
+    const typeAdd = document.getElementById("type").value;
+    const typeManage = document.getElementById("manageCategoryType").value;
+
+    renderCategorySelect(document.getElementById("category"), content.settings.categories[typeAdd]);
+    renderCategoryList(content.settings.categories[typeManage]);
 
     const container = document.getElementById("transactions");
     container.innerHTML = "";
@@ -68,7 +127,7 @@ async function loadTransactions() {
         <strong style="color: ${color}">${sign}${t.amount}€</strong> - ${t.category}<br/>
         <small>${t.date} | ${t.description}</small>
         <div class="actions">
-          <button onclick="editTransaction(${t.id})">✏️</button>
+          <button onclick="openEditModal(${t.id})">✏️</button>
           <button onclick="deleteTransaction(${t.id})">🗑️</button>
         </div>
       `;
@@ -84,21 +143,22 @@ async function loadTransactions() {
   }
 }
 
-function renderCategoriesUI(categories) {
-  const select = document.getElementById("category");
-  const list = document.getElementById("categoriesList");
-
-  select.innerHTML = "";
-  list.innerHTML = "";
-
+function renderCategorySelect(selectElement, categories) {
+  selectElement.innerHTML = "";
   categories.forEach(c => {
-    // Add to Select
     const option = document.createElement("option");
     option.value = c;
     option.textContent = c;
-    select.appendChild(option);
+    selectElement.appendChild(option);
+  });
+}
 
-    // Add to List
+function renderCategoryList(categories) {
+  const list = document.getElementById("categoriesList");
+  const typeManage = document.getElementById("manageCategoryType").value;
+
+  list.innerHTML = "";
+  categories.forEach(c => {
     const li = document.createElement("li");
     li.style.display = "flex";
     li.style.justifyContent = "space-between";
@@ -110,7 +170,7 @@ function renderCategoriesUI(categories) {
 
     li.innerHTML = `
       <span style="display:flex; align-items:center;">${c}</span>
-      <button style="width:30px; padding:5px; background:#ef4444; margin:0;" onclick="deleteCategory('${c}')">X</button>
+      <button style="width:30px; padding:5px; background:#ef4444; margin:0;" onclick="deleteCategory('${c}', '${typeManage}')">X</button>
     `;
     list.appendChild(li);
   });
@@ -119,27 +179,32 @@ function renderCategoriesUI(categories) {
 async function addCategory() {
   const input = document.getElementById("newCategory");
   const val = input.value.trim();
+  const typeManage = document.getElementById("manageCategoryType").value;
+
   if (!val) return;
 
   const { content, sha } = await getData();
-  if (!content.settings.categories) content.settings.categories = ["Alimentação", "Transportes", "Lazer", "Outros"];
+  const cats = ensureCategoriesStruct(content.settings.categories);
+  content.settings.categories = cats;
 
-  if (!content.settings.categories.includes(val)) {
-    content.settings.categories.push(val);
+  if (!content.settings.categories[typeManage].includes(val)) {
+    content.settings.categories[typeManage].push(val);
     await updateData(content, sha);
     input.value = "";
     await loadTransactions();
   }
 }
 
-async function deleteCategory(cat) {
+async function deleteCategory(cat, type) {
   if (!confirm(`Remover categoria: ${cat}?`)) return;
   const { content, sha } = await getData();
-  if (content.settings.categories) {
-    content.settings.categories = content.settings.categories.filter(c => c !== cat);
-    await updateData(content, sha);
-    await loadTransactions();
-  }
+  const cats = ensureCategoriesStruct(content.settings.categories);
+
+  cats[type] = cats[type].filter(c => c !== cat);
+  content.settings.categories = cats;
+
+  await updateData(content, sha);
+  await loadTransactions();
 }
 window.deleteCategory = deleteCategory;
 
@@ -249,21 +314,60 @@ async function deleteTransaction(id) {
   await loadTransactions();
 }
 
-async function editTransaction(id) {
-  const { content, sha } = await getData();
+async function openEditModal(id) {
+  const { content } = await getData();
   const transaction = content.transactions.find(t => t.id === id);
+  if (!transaction) return;
 
-  const newAmount = prompt("Novo valor:", transaction.amount);
-  const newCategoryInput = prompt("Nova categoria:", transaction.category);
-  const newDescription = prompt("Nova descrição:", transaction.description);
+  const cats = ensureCategoriesStruct(content.settings.categories);
 
-  if (newAmount !== null) transaction.amount = parseFloat(newAmount);
-  if (newCategoryInput !== null) transaction.category = newCategoryInput;
-  if (newDescription !== null) transaction.description = newDescription;
+  document.getElementById("editId").value = transaction.id;
+  document.getElementById("editType").value = transaction.type || "expense";
+  document.getElementById("editDate").value = transaction.date;
+  document.getElementById("editAmount").value = transaction.amount;
+  document.getElementById("editDescription").value = transaction.description || "";
 
-  await updateData(content, sha);
-  await loadTransactions();
+  // Carregar categorias baseadas no tipo
+  const catSelect = document.getElementById("editCategory");
+  renderCategorySelect(catSelect, cats[transaction.type || "expense"]);
+
+  // Garantir que a categoria da transação é selecionada (ou a primeira opção se entretanto foi apagada)
+  catSelect.value = transaction.category;
+
+  document.getElementById("editModal").classList.remove("hidden");
 }
 
-window.editTransaction = editTransaction;
+async function saveEditedTransaction() {
+  const id = parseInt(document.getElementById("editId").value);
+  const type = document.getElementById("editType").value;
+  const date = document.getElementById("editDate").value;
+  const amount = parseFloat(document.getElementById("editAmount").value);
+  const category = document.getElementById("editCategory").value;
+  const description = document.getElementById("editDescription").value;
+
+  if (!date || isNaN(amount)) {
+    alert("Preencha a data e o valor.");
+    return;
+  }
+
+  const { content, sha } = await getData();
+
+  const index = content.transactions.findIndex(t => t.id === id);
+  if (index !== -1) {
+    content.transactions[index] = {
+      id: id,
+      type: type,
+      date: date,
+      amount: amount,
+      category: category,
+      description: description
+    };
+
+    await updateData(content, sha);
+    document.getElementById("editModal").classList.add("hidden");
+    await loadTransactions();
+  }
+}
+
+window.openEditModal = openEditModal;
 window.deleteTransaction = deleteTransaction;

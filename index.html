@@ -17,10 +17,39 @@
 
   <div id="settingsModal" class="modal hidden">
     <div class="modal-content">
-      <h3>Configuração GitHub</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0;">Configuração GitHub</h3>
+        <button id="closeSettingsBtn"
+          style="width: auto; padding: 5px 10px; background: transparent; color: #333; margin: 0; font-size: 16px;">✕</button>
+      </div>
       <input type="text" id="username" placeholder="GitHub Username" />
       <input type="text" id="token" placeholder="Personal Access Token" />
       <button id="saveAuth">Guardar</button>
+    </div>
+  </div>
+
+  <!-- Modal de Edição de Transação -->
+  <div id="editModal" class="modal hidden">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0;">Editar Transação</h3>
+        <button id="closeEditBtn"
+          style="width: auto; padding: 5px 10px; background: transparent; color: #333; margin: 0; font-size: 16px;">✕</button>
+      </div>
+      <input type="hidden" id="editId" />
+      <select id="editType"
+        style="width: 100%; margin: 5px 0; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white;">
+        <option value="expense">Gasto</option>
+        <option value="income">Recebimento</option>
+      </select>
+      <input type="date" id="editDate" />
+      <input type="number" id="editAmount" placeholder="Valor" />
+      <select id="editCategory"
+        style="width: 100%; margin: 5px 0; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white;">
+        <!-- Categorias carregadas via JS -->
+      </select>
+      <input type="text" id="editDescription" placeholder="Descrição" />
+      <button id="saveEditBtn">Guardar Alterações</button>
     </div>
   </div>
 
@@ -67,6 +96,11 @@
 
   <section class="card">
     <h3>Gerir Categorias</h3>
+    <select id="manageCategoryType"
+      style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white;">
+      <option value="expense">Gastos</option>
+      <option value="income">Recebimentos</option>
+    </select>
     <ul id="categoriesList" style="list-style: none; padding: 0; margin-bottom: 15px;"></ul>
     <div style="display: flex; gap: 10px; align-items: stretch;">
       <input type="text" id="newCategory" placeholder="Nova Categoria" style="flex: 1;" />
