@@ -1,31 +1,59 @@
-<h1>💰 Finance Dashboard</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Finance App</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+</head>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+<body>
 
-<section class="card" id="dashboard">
-  <h3>Resumo do Mês</h3>
-  <p><strong>Total gasto:</strong> <span id="totalSpent">0€</span></p>
-  <p><strong>Orçamento:</strong> <span id="monthlyBudget">0€</span></p>
-  <p><strong>Restante:</strong> <span id="remaining">0€</span></p>
-  <div class="progress-bar">
-    <div id="progress"></div>
+  <h1>💰 Finance Dashboard</h1>
+  <button id="settingsBtn">⚙️ Configurações</button>
+
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Configuração GitHub</h3>
+      <input type="text" id="username" placeholder="GitHub Username" />
+      <input type="text" id="token" placeholder="Personal Access Token" />
+      <button id="saveAuth">Guardar</button>
+    </div>
   </div>
-</section>
+  <section class="card" id="dashboard">
+    <h3>Resumo do Mês</h3>
+    <p><strong>Total gasto:</strong> <span id="totalSpent">0€</span></p>
+    <p><strong>Orçamento:</strong> <span id="monthlyBudget">0€</span></p>
+    <p><strong>Restante:</strong> <span id="remaining">0€</span></p>
+    <div class="progress-bar">
+      <div id="progress"></div>
+    </div>
+  </section>
 
-<section class="card">
-  <h3>Definir Orçamento Mensal</h3>
-  <input type="number" id="budgetInput" placeholder="Orçamento €" />
-  <button id="saveBudget">Guardar Orçamento</button>
-</section>
+  <section class="card">
+    <h3>Definir Orçamento Mensal</h3>
+    <input type="number" id="budgetInput" placeholder="Orçamento €" />
+    <button id="saveBudget">Guardar Orçamento</button>
+  </section>
 
-<section class="card">
-  <h3>Adicionar Gasto</h3>
-  <input type="date" id="date" />
-  <input type="number" id="amount" placeholder="Valor" />
-  <input type="text" id="category" placeholder="Categoria" />
-  <input type="text" id="description" placeholder="Descrição" />
-  <button id="addBtn">Adicionar</button>
-</section>
+  <section class="card">
+    <h3>Adicionar Gasto</h3>
+    <input type="date" id="date" />
+    <input type="number" id="amount" placeholder="Valor" />
+    <input type="text" id="category" placeholder="Categoria" />
+    <input type="text" id="description" placeholder="Descrição" />
+    <button id="addBtn">Adicionar</button>
+  </section>
 
-<section>
-  <h3>Transações</h3>
-  <div id="transactions"></div>
-</section>
+  <section>
+    <h3>Transações</h3>
+    <div id="transactions"></div>
+  </section>
+
+</body>
+</html>

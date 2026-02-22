@@ -1,6 +1,19 @@
 document.getElementById("addBtn").addEventListener("click", addTransaction);
 document.getElementById("saveBudget").addEventListener("click", saveBudget);
 
+document.getElementById("settingsBtn").addEventListener("click", () => {
+  document.getElementById("settingsModal").classList.remove("hidden");
+});
+
+document.getElementById("saveAuth").addEventListener("click", () => {
+  const token = document.getElementById("token").value;
+  const username = document.getElementById("username").value;
+
+  saveCredentials(token, username);
+  document.getElementById("settingsModal").classList.add("hidden");
+  loadTransactions();
+});
+
 async function loadTransactions() {
   const { content } = await getData();
   const container = document.getElementById("transactions");
