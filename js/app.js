@@ -15,39 +15,49 @@ document.getElementById("saveAuth").addEventListener("click", () => {
 });
 
 async function loadTransactions() {
-  const { content } = await getData();
-  const container = document.getElementById("transactions");
-  container.innerHTML = "";
+  try {
+    const creds = getCredentials();
+    if (!creds.token || !creds.username) return;
 
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
+    const { content } = await getData();
+    const container = document.getElementById("transactions");
+    container.innerHTML = "";
 
-  let total = 0;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
 
-  content.transactions.forEach(t => {
-    const dateObj = new Date(t.date);
-    if (
-      dateObj.getMonth() === currentMonth &&
-      dateObj.getFullYear() === currentYear
-    ) {
-      total += t.amount;
-    }
+    let total = 0;
 
-    const div = document.createElement("div");
-    div.className = "transaction-card";
+    content.transactions.forEach(t => {
+      const dateObj = new Date(t.date);
 
-    div.innerHTML = `
-    <strong>${t.amount}€</strong> - ${t.category}<br/>
-    <small>${t.date} | ${t.description}</small>
-    <div class="actions">
-        <button onclick="editTransaction(${t.id})">✏️</button>
-        <button onclick="deleteTransaction(${t.id})">🗑️</button>
-    </div>
-    `;
-    container.appendChild(div);
-  });
+      if (
+        dateObj.getMonth() === currentMonth &&
+        dateObj.getFullYear() === currentYear
+      ) {
+        total += t.amount;
+      }
 
-  updateDashboard(total, content.settings.monthlyBudget);
+      const div = document.createElement("div");
+      div.className = "transaction-card";
+
+      div.innerHTML = `
+        <strong>${t.amount}€</strong> - ${t.category}<br/>
+        <small>${t.date} | ${t.description}</small>
+        <div class="actions">
+          <button onclick="editTransaction(${t.id})">✏️</button>
+          <button onclick="deleteTransaction(${t.id})">🗑️</button>
+        </div>
+      `;
+
+      container.appendChild(div);
+    });
+
+    updateDashboard(total, content.settings.monthlyBudget);
+
+  } catch (error) {
+    console.error("Erro ao carregar dados:", error);
+  }
 }
 
 function updateDashboard(total, budget) {
@@ -117,3 +127,6 @@ async function editTransaction(id) {
   await updateData(content, sha);
   await loadTransactions();
 }
+
+window.editTransaction = editTransaction;
+window.deleteTransaction = deleteTransaction;

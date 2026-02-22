@@ -16,7 +16,7 @@ async function getData() {
   );
 
   const data = await res.json();
-  const content = JSON.parse(atob(data.content));
+  const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
   return { content, sha: data.sha };
 }
 
@@ -34,7 +34,7 @@ async function updateData(newData, sha) {
       },
       body: JSON.stringify({
         message: "Update finance data",
-        content: btoa(JSON.stringify(newData, null, 2)),
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(newData, null, 2)))),
         sha: sha
       })
     }
