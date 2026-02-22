@@ -1,38 +1,31 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <title>Finance App</title>
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body>
+<h1>💰 Finance Dashboard</h1>
 
-  <h1>Finance Dashboard</h1>
+<section class="card" id="dashboard">
+  <h3>Resumo do Mês</h3>
+  <p><strong>Total gasto:</strong> <span id="totalSpent">0€</span></p>
+  <p><strong>Orçamento:</strong> <span id="monthlyBudget">0€</span></p>
+  <p><strong>Restante:</strong> <span id="remaining">0€</span></p>
+  <div class="progress-bar">
+    <div id="progress"></div>
+  </div>
+</section>
 
-  <section id="auth">
-    <h3>Autenticação</h3>
-    <input type="text" id="token" placeholder="GitHub Token" />
-    <input type="text" id="username" placeholder="GitHub Username" />
-    <button id="saveAuth">Guardar</button>
-  </section>
+<section class="card">
+  <h3>Definir Orçamento Mensal</h3>
+  <input type="number" id="budgetInput" placeholder="Orçamento €" />
+  <button id="saveBudget">Guardar Orçamento</button>
+</section>
 
-  <section id="add">
-    <h3>Adicionar Gasto</h3>
-    <input type="date" id="date" />
-    <input type="number" id="amount" placeholder="Valor" />
-    <input type="text" id="category" placeholder="Categoria" />
-    <input type="text" id="description" placeholder="Descrição" />
-    <button id="addBtn">Adicionar</button>
-  </section>
+<section class="card">
+  <h3>Adicionar Gasto</h3>
+  <input type="date" id="date" />
+  <input type="number" id="amount" placeholder="Valor" />
+  <input type="text" id="category" placeholder="Categoria" />
+  <input type="text" id="description" placeholder="Descrição" />
+  <button id="addBtn">Adicionar</button>
+</section>
 
-  <section>
-    <h3>Transações</h3>
-    <ul id="transactions"></ul>
-  </section>
-
-  <script src="js/api.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/app.js"></script>
-
-</body>
-</html>
+<section>
+  <h3>Transações</h3>
+  <div id="transactions"></div>
+</section>

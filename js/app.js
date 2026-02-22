@@ -1,26 +1,46 @@
-document.getElementById("saveAuth").addEventListener("click", () => {
-  const token = document.getElementById("token").value;
-  const username = document.getElementById("username").value;
-  saveCredentials(token, username);
-  alert("Credenciais guardadas!");
-  loadTransactions();
-});
-
 document.getElementById("addBtn").addEventListener("click", addTransaction);
+document.getElementById("saveBudget").addEventListener("click", saveBudget);
 
 async function loadTransactions() {
-  const creds = getCredentials();
-  if (!creds.token || !creds.username) return;
-
   const { content } = await getData();
-  const list = document.getElementById("transactions");
-  list.innerHTML = "";
+  const container = document.getElementById("transactions");
+  container.innerHTML = "";
+
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  let total = 0;
 
   content.transactions.forEach(t => {
-    const li = document.createElement("li");
-    li.textContent = `${t.date} - ${t.amount}€ - ${t.category} - ${t.description}`;
-    list.appendChild(li);
+    const dateObj = new Date(t.date);
+    if (
+      dateObj.getMonth() === currentMonth &&
+      dateObj.getFullYear() === currentYear
+    ) {
+      total += t.amount;
+    }
+
+    const div = document.createElement("div");
+    div.className = "transaction-card";
+    div.innerHTML = `
+      <strong>${t.amount}€</strong> - ${t.category}<br/>
+      <small>${t.date} | ${t.description}</small>
+    `;
+    container.appendChild(div);
   });
+
+  updateDashboard(total, content.settings.monthlyBudget);
+}
+
+function updateDashboard(total, budget) {
+  document.getElementById("totalSpent").textContent = total + "€";
+  document.getElementById("monthlyBudget").textContent = budget + "€";
+
+  const remaining = budget - total;
+  document.getElementById("remaining").textContent = remaining + "€";
+
+  const percent = budget > 0 ? (total / budget) * 100 : 0;
+  document.getElementById("progress").style.width = percent + "%";
 }
 
 async function addTransaction() {
@@ -38,6 +58,16 @@ async function addTransaction() {
     category,
     description
   });
+
+  await updateData(content, sha);
+  await loadTransactions();
+}
+
+async function saveBudget() {
+  const budget = parseFloat(document.getElementById("budgetInput").value);
+  const { content, sha } = await getData();
+
+  content.settings.monthlyBudget = budget;
 
   await updateData(content, sha);
   await loadTransactions();
